@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
-const bodyParser = require("body-parser");
+
+app.use(express.json());
+
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 
@@ -14,5 +16,7 @@ mongoose.connect("mongodb+srv://Antho78:LABRADOR78@clustersiteweb.narmn.mongodb.
     console.log("Connexion mongoose echoué")
 })
 
+const routeUsers = require("./routes/users");
+app.use("/users", routeUsers)
 
 module.exports = app;
