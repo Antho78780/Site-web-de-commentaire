@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+require("dotenv").config();
 
 app.use(express.json());
 
@@ -13,7 +14,7 @@ app.use((req, res, next) => {
 
 const moogoose = require("mongoose");
 
-moogoose.connect("mongodb+srv://Antho78:LABRADOR78@clustersiteweb.narmn.mongodb.net/ClusterSiteWeb?retryWrites=true&w=majority",
+moogoose.connect(`mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@clustersiteweb.narmn.mongodb.net/${process.env.CLUSTER}?retryWrites=true&w=majority`,
 { useNewUrlParser: true, useUnifiedTopology: true}) 
 .then(() => {
     console.log("Connexion mongoose réussi")
