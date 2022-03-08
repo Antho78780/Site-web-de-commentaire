@@ -3,10 +3,6 @@ const app = express();
 
 app.use(express.json());
 
-const dotenv = require("dotenv");
-const mongoose = require("mongoose");
-
-
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
@@ -15,9 +11,9 @@ app.use((req, res, next) => {
   });
 
 
+const moogoose = require("mongoose");
 
-
-mongoose.connect("mongodb+srv://Antho78:LABRADOR78@clustersiteweb.narmn.mongodb.net/ClusterSiteWeb?retryWrites=true&w=majority",
+moogoose.connect("mongodb+srv://Antho78:LABRADOR78@clustersiteweb.narmn.mongodb.net/ClusterSiteWeb?retryWrites=true&w=majority",
 { useNewUrlParser: true, useUnifiedTopology: true}) 
 .then(() => {
     console.log("Connexion mongoose réussi")
@@ -27,6 +23,9 @@ mongoose.connect("mongodb+srv://Antho78:LABRADOR78@clustersiteweb.narmn.mongodb.
 })
 
 const routeUsers = require("./routes/users");
-app.use("/users/", routeUsers)
+const routePosts = require("./routes/posts");
+
+app.use("/users/", routeUsers);
+app.use("/posts/", routePosts);
 
 module.exports = app;

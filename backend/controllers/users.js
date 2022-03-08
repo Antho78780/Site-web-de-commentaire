@@ -5,8 +5,7 @@ exports.register = (req, res) => {
     console.log(req.body);
     bcrypt.hash(req.body.mdp, 10,(err,hash) =>{
         modelsUsers.create({
-            prenom: req.body.prenom,
-            nom: req.body.nom,
+            userName: req.body.userName,
             email: req.body.email,
             password: hash
         })
@@ -21,28 +20,60 @@ exports.register = (req, res) => {
 
 exports.login = (req, res) => {
     console.log(req.body);
-    modelsUsers.findOne({
-        email: req.body.email,
-    })
-    .then((user) => {
-        bcrypt.compare(req.body.mdp, user.password)
-        .then((controlMdp) => {
-            if(controlMdp) {
-                res.status(200).json( 
-                    {
-                        userId: user._id,
-                        message: "Compte connecté"
-                    })
+        modelsUsers.findOne({
+            email: req.body.email
+        })
+        .then((user) => {
+            if(user) {
+                bcrypt.compare(req.body.mdp, user.password)
+                .then((controlMdp) => {
+                    if(controlMdp) {
+                        res.status(200).json( 
+                            {
+                                userId: user._id,
+                                message: "Compte connecté"
+                            }
+                        )
+                    }
+                    else {
+                        res.status(400).json({error: "mot de passe incorrect"})
+                    }
+                })
             }
             else {
-                res.status(400).json({error: "Compte mal loger"})
+                res.status(400).json({error: "Email incorrect"});
             }
         })
-    })
+        .catch((err) => {
+            res.status(400).json(err)
+        })
 }
+
 exports.getAllUsers = (req, res) => {
     modelsUsers.find()
     .then((users) => {
         res.status(200).json(users)
     })
+}
+
+exports.getOneUser = (req, res) => {
+    console.log(req.params)
+    modelsUsers.findById(req.params.id)
+    .then((user) => {
+        res.status(200).json(user)
+    })
+}
+
+exports.createImage = (req, res) => {
+   modelsUsers.findById(req.params.id)
+   .then((user) => {
+       if(user) {
+           user.updateOne({
+               image: req.body.image
+           })
+           .then(() => {
+               res.status(201).json({message: "Image créer"})
+           })
+       }
+   })
 }

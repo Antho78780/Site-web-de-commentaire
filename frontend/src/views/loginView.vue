@@ -4,18 +4,17 @@
                 <div class="col-md-6">
                     <div class="card px-5 py-5" id="form1">
                         <div class="form-data">
-                            <div class="forms-inputs mb-4">
-                                <span>Email ou Prenom</span> 
+                            <form method="post" class="forms-inputs mb-4">
+                                <span>Email</span> 
                                 <input type="text" v-model="email">
-                                <div class="invalid-feedback">A valid email is required!</div>
-                            </div>
-                            <div class="forms-inputs mb-4"> 
+                            </form>
+                            <form method="post" class="forms-inputs mb-4"> 
                                 <span>Mot de passe</span> 
                                 <input type="password" v-model="password">
-                                <div class="invalid-feedback">Password must be 8 character!</div>
-                            </div>
+                                <div class="errorMsg">{{errorCompte}}</div>
+                            </form>
                             <div class="mb-3"> 
-                                <button @click="buttonConnecter" class="btn btn-dark w-100">Se connecter</button> 
+                                <button @click="connecter" class="btn btn-dark w-100">Se connecter</button> 
                             </div>
                             <div class="mb-3"> 
                                 <button @click="pageEnregistrer" class="btn btn-dark w-100">S'enregistrer</button> 
@@ -32,30 +31,41 @@
            return {
                email: "",
                password: "",
-               apiUserLogin: "https://localhost:3000/users/login"
+               apiUserLogin: "http://localhost:3000/users/login",
+               errorCompte: "",
            }
        },
        mounted(){
-
+          
        },
        methods: {
-           buttonConnecter() {
+           connecter() {
                const email = this.email;
                const mdp = this.password;
                const objetLogin = {email, mdp};
                console.log(objetLogin);
-
-               fetch(this.apiUserLogin, {
-                   method: "POST",
-                   headers: {
-                       "Content-type" : "application/json"
-                   },
-                   body: JSON.stringify(objetLogin)
-               })
-               .then(res => res.json())
+               fetch (this.apiUserLogin, {
+                method: "POST", 
+                headers: {
+                    'Content-Type' : 'application/json'
+                },
+                body: JSON.stringify(objetLogin)
+            })
+           .then(res => res.json())
+            .then((user) => {
+                console.log(user)
+                
+                if(user.userId) {
+                    sessionStorage.setItem("userId", JSON.stringify(user.userId))
+                    window.location.href = "/#/accueil"
+                }
+                else {
+                    this.errorCompte = user.error
+                }
+            })
             },
             pageEnregistrer() {
-                window.location.href = "/#/register"
+                window.location.href = "/?#/register"
             }
 
        }
@@ -113,5 +123,14 @@ input {
 }
 .panel-default {
     margin-top: 50%;
+}
+.errorMsg {
+    text-align: center;
+    font-weight: bold;
+    color: red;
+}
+.btn-dark {
+    background-color: #76b852;
+    border: #76b852;
 }
 </style>
