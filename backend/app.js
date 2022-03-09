@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 const app = express();
 require("dotenv").config();
 
@@ -24,9 +25,10 @@ moogoose.connect(`mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@clus
 })
 
 const routeUsers = require("./routes/users");
-const routePosts = require("./routes/posts");
+const routePostsEtComments = require("./routes/posts");
 
 app.use("/users/", routeUsers);
-app.use("/posts/", routePosts);
+app.use("/posts/", routePostsEtComments);
+app.use("/comments/", routePostsEtComments)
 
 module.exports = app;
