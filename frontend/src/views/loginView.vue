@@ -1,22 +1,20 @@
 <template>
 	<div class="container mt-5">
-	<div class="row d-flex justify-content-center">
+		<div class="row d-flex justify-content-center">
 			<div class="col-md-6">
 				<div class="card px-5 py-5" id="form1">
 					<div class="form-data">
 						<form method="post" class="forms-inputs mb-4">
 							<span>Email</span>
-							<input type="text" v-model="email" />
+							<input class="borderText" type="text" v-model="email" />
 						</form>
 						<form method="post" class="forms-inputs mb-4">
 							<span>Mot de passe</span>
-							<input type="password" v-model="password" />
+							<input class="borderText" type="password" v-model="password" />
 							<div class="errorMsg">{{ errorCompte }}</div>
 						</form>
 						<div class="mb-3">
-							<button @click="connecter" class="btn btn-dark w-100">
-								Se connecter
-							</button>
+							<button @click="connecter" class="btn btn-dark w-100">Se connecter</button>
 						</div>
 						<div class="mb-3">
 							<button @click="pageEnregistrer" class="btn btn-dark w-100">
@@ -131,5 +129,11 @@ input {
 .btn-dark {
 	background-color: #76b852;
 	border: #76b852;
+}
+span {
+	font-weight: bold;
+}
+.borderText {
+	border: 1px solid #ced4da !important;
 }
 </style>

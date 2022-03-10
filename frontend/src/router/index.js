@@ -16,6 +16,11 @@ const routes = [
 		name: 'accueil',
 		component: () => import("../views/accueilView.vue")
 	},
+	{
+		path: '/profil',
+		name: 'profil',
+		component: () => import("../views/profilView.vue")
+	},
 ]
 
 const router = createRouter({

@@ -8,33 +8,34 @@ exports.postCreate = (req, res) => {
         comments: [],
         datePost: new Date()
     })
-    .then((post) => {
-        res.status(201).json(post)
-    })
+        .then((post) => {
+            res.status(201).json(post)
+        })
 }
 
 exports.getAllPosts = (req, res) => {
     modelsPosts.find()
-    .then((posts) => {
-        res.status(200).json(posts)
-    })
+        .then((posts) => {
+            res.status(200).json(posts)
+        })
 }
 
 exports.createComment = (req, res) => {
     modelComments.create({
         userId: req.body.userId,
         postId: req.params.id,
-        comment: req.body.comment
+        comment: req.body.comment,
+        datePost: new Date()
     })
-    .then((comment) => {
-        res.status(201).json(comment)
-    })
-   
+        .then((comment) => {
+            res.status(201).json(comment)
+        })
+
 }
 
 exports.getAllComments = (req, res) => {
     modelComments.find()
-    .then((comments) => {
-        res.status(200).json(comments);
-    })
+        .then((comments) => {
+            res.status(200).json(comments);
+        })
 }
