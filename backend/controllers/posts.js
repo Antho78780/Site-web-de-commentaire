@@ -1,5 +1,4 @@
 const modelsPosts = require("../models/post");
-const modelComments = require("../models/comments");
 
 exports.postCreate = (req, res) => {
     modelsPosts.create({
@@ -20,22 +19,9 @@ exports.getAllPosts = (req, res) => {
         })
 }
 
-exports.createComment = (req, res) => {
-    modelComments.create({
-        userId: req.body.userId,
-        postId: req.params.id,
-        comment: req.body.comment,
-        datePost: new Date()
+exports.deletePost = (req, res) => {
+    modelsPosts.findByIdAndDelete(req.params.id)
+    .then((deletePost) => {
+        res.status(201).json(deletePost);
     })
-        .then((comment) => {
-            res.status(201).json(comment)
-        })
-
-}
-
-exports.getAllComments = (req, res) => {
-    modelComments.find()
-        .then((comments) => {
-            res.status(200).json(comments);
-        })
 }

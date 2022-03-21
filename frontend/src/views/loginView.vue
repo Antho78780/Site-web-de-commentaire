@@ -37,7 +37,6 @@ export default {
 			errorCompte: "",
 		};
 	},
-	mounted() {},
 	methods: {
 		connecter() {
 			const email = this.email;

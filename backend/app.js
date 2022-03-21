@@ -25,10 +25,11 @@ moogoose.connect(`mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@clus
 })
 
 const routeUsers = require("./routes/users");
-const routePostsEtComments = require("./routes/posts");
+const routePosts = require("./routes/posts");
+const routeComments = require("./routes/comments");
 
 app.use("/users/", routeUsers);
-app.use("/posts/", routePostsEtComments);
-app.use("/comments/", routePostsEtComments)
+app.use("/posts/", routePosts);
+app.use("/comments/", routeComments);
 
 module.exports = app;

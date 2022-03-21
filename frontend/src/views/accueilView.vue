@@ -143,9 +143,18 @@
 										<p class="text-secondary">
 											{{ post.post }}
 										</p>
-										<button class="btn btn-success" @click="buttonComment(post)">
-											Touts les commentaires
-										</button>
+										<div id="flex-button">
+											<button class="btn btn-success" @click="buttonComment(post)">
+												Touts les commentaires
+											</button>
+											<button
+												v-if="post.userId == post.storageUserId"
+												@click="supprimerPost(post)"
+												class="btn btn-primary"
+											>
+												Supprimer
+											</button>
+										</div>
 										<div class="text-muted small text-center align-self-center">
 											<span class="noneComment" v-if="post.numberComments > 1"
 												><i class="far fa-comment ml-2"></i>
@@ -174,17 +183,36 @@
 																<small class="font-weight-bold">{{ comment.comment }}</small></span
 															>
 														</div>
-														<small>{{ comment.dateJour }} à {{ comment.dateHeure }}</small>
+														<div>
+															<small>{{ comment.dateJour }} à {{ comment.dateHeure }}</small>
+															&nbsp;
+															<button
+																v-if="comment.userIdComment == comment.storageUserIdComment"
+																class="btn btn-success"
+																@click="buttonSupprimerComment(comment, post)"
+															>
+																Supprimer
+															</button>
+														</div>
 													</div>
 												</div>
 											</div>
 										</div>
 									</div>
-									<input
-										class="modifComment"
-										type="text"
-										placeholder="Entrez votre commentaire"
-									/>
+									<div id="modifComment">
+										<input
+											type="text"
+											placeholder="Entrez votre commentaire"
+											class="modifCComment recupComment"
+											value=""
+										/>
+										<button
+											@click="buttonEnvoisComment(post)"
+											class="btn btn-primary modifButtonEnvoisComment"
+										>
+											Envoyer
+										</button>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -270,11 +298,12 @@ export default {
 			apiGetAllPosts: "http://localhost:3000/posts/getAllPosts",
 			apiGetAllComments: "http://localhost:3000/comments/getAllComments",
 			apiGetAllUsers: "http://localhost:3000/users/getAllUsers",
+			arrayAllUsers: [],
 			postsArray: [],
-			recupComment: "",
 		};
 	},
 	mounted() {
+		const storageUserId = JSON.parse(sessionStorage.getItem("userId"));
 		fetch(this.apiGetAllPosts)
 			.then((res) => res.json())
 			.then((posts) => {
@@ -286,7 +315,7 @@ export default {
 					fetch(this.apiGetAllComments)
 						.then((res) => res.json())
 						.then((comments) => {
-							const allCommentsOnePost = comments.filter((el) => el.postId == post._id);
+							const arrayAllComments = comments.filter((el) => el.postId == post._id);
 							fetch(`http://localhost:3000/users/getOneUser/${post.userId}`)
 								.then((res) => res.json())
 								.then((user) => {
@@ -295,9 +324,11 @@ export default {
 										pseudo: user.userName,
 										post: post.post,
 										comments: [],
-										numberComments: allCommentsOnePost.length,
+										numberComments: arrayAllComments.length,
 										dateJour: dateJour,
 										dateHeure: dateHeure,
+										userId: user._id,
+										storageUserId: storageUserId,
 									});
 								});
 						});
@@ -311,34 +342,35 @@ export default {
 		},
 		buttonComment(post) {
 			post.comments = [];
-			document.querySelector(".modifComment").style.display = "block";
-			document.querySelector(".noneComment").style.display = "none";
+			const userIdStorage = JSON.parse(sessionStorage.getItem("userId"));
 			fetch(this.apiGetAllComments)
 				.then((res) => res.json())
 				.then((comments) => {
-					const allCommentsOnePost = comments.filter((el) => el.postId == post.idPost);
-					for (let allCommentOnePost of allCommentsOnePost) {
-						const newDate = new Date(allCommentOnePost.datePost);
+					const arrayComments = comments.filter((el) => el.postId == post.idPost);
+					for (let comment of arrayComments) {
+						const newDate = new Date(comment.datePost);
 						const dateJour = newDate.toLocaleDateString();
 						const dateHeure = newDate.toLocaleTimeString();
-						fetch(`http://localhost:3000/users/getOneUser/${allCommentOnePost.userId}`)
+						fetch(`http://localhost:3000/users/getOneUser/${comment.userId}`)
 							.then((res) => res.json())
-							.then((commentUser) => {
+							.then((userComment) => {
 								post.comments.push({
-									userName: commentUser.userName,
-									comment: allCommentOnePost.comment,
+									userName: userComment.userName,
+									comment: comment.comment,
 									dateJour: dateJour,
 									dateHeure: dateHeure,
+									idComment: comment._id,
+									userIdComment: comment.userId,
+									storageUserIdComment: userIdStorage,
 								});
 							});
 					}
 				});
 		},
 		buttonEnvoisComment(post) {
-			console.log(post);
 			const userId = JSON.parse(sessionStorage.getItem("userId"));
-			const comment = this.recupComment;
-			const objetComment = { userId, comment };
+			const comment = document.querySelector(".recupComment").value;
+			const objetComment = { comment, userId };
 
 			fetch(`http://localhost:3000/comments/createComment/${post.idPost}`, {
 				method: "POST",
@@ -346,19 +378,54 @@ export default {
 					"Content-type": "application/json",
 				},
 				body: JSON.stringify(objetComment),
+			}).then((res) => res.json())
+			.then((comment) => {
+				console.log(comment)
+				fetch(`http://localhost:3000/comments/getAllComments`)
+				.then(res => res.json())
+				.then((comments) => {
+					const arrayComments = comments.filter(el => el.postId == post.idPost);
+					post.numberComments = arrayComments.length;
+				})
 			})
-				.then((res) => res.json())
-				.then((createComment) => {
-					console.log(createComment);
-				});
 		},
 		buttonProfil() {
 			window.location.href = "/#/profil";
+		},
+		buttonPost() {
+			window.location.href = "/#/post";
+		},
+		supprimerPost(post) {
+			fetch(`http://localhost:3000/posts/deletePost/${post.idPost}`, {
+				method: "DELETE",
+				headers: {
+					"Content-type": "application/json",
+				},
+			}).then((res) => {
+				if (res.ok) {
+					location.reload("/#/accueil");
+				}
+			});
+		},
+		buttonSupprimerComment(comment, post) {
+			fetch(`http://localhost:3000/comments/deleteComment/${comment.idComment}`, {
+				method: "DELETE",
+				headers: {
+					"Content-type": "application/json",
+				},
+			}).then((res) => {
+				console.log(res);
+				console.log(post)
+			});
 		},
 	},
 };
 </script>
 <style scoped>
+#flex-button {
+	display: flex;
+	justify-content: space-between;
+}
 .btn-perso {
 	margin: 20px;
 }
@@ -527,12 +594,28 @@ body {
 p {
 	margin-top: 10px !important;
 }
-.modifComment {
-	width: 50%;
+#modifComment {
 	margin-top: 50px;
-	display: none;
 }
 .col-md-8 {
 	width: 100%;
+}
+.bg-primary {
+	border-radius: 10px;
+	text-align: center;
+	margin-top: 10px;
+}
+.modifMembre {
+	font-weight: bold;
+	margin: 10px;
+}
+i {
+	font-family: FontAwesome;
+}
+.modifButtonEnvoisComment {
+	margin-left: 10px;
+}
+.modifCComment {
+	width: 50%;
 }
 </style>
