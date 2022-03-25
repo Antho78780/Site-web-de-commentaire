@@ -124,7 +124,7 @@
 								<div class="media forum-item">
 									<a href="#" data-toggle="collapse" data-target=".forum-content"
 										><img
-											src="https://bootdey.com/img/Content/avatar/avatar1.png"
+											:src="post.image"
 											class="mr-3 rounded-circle"
 											width="50"
 											alt="User"
@@ -184,7 +184,7 @@
 															>
 														</div>
 														<div>
-															<small>{{ comment.dateJour }} à {{ comment.dateHeure }}</small>
+															<small>Le {{ comment.dateJour }} à {{ comment.dateHeure }}</small>
 															&nbsp;
 															<button
 																v-if="comment.userIdComment == comment.storageUserIdComment"
@@ -296,7 +296,6 @@ export default {
 	data() {
 		return {
 			apiGetAllPosts: "http://localhost:3000/posts/getAllPosts",
-			apiGetAllComments: "http://localhost:3000/comments/getAllComments",
 			apiGetAllUsers: "http://localhost:3000/users/getAllUsers",
 			arrayAllUsers: [],
 			postsArray: [],
@@ -312,10 +311,9 @@ export default {
 					const dateJour = newDate.toLocaleDateString();
 					const dateHeure = newDate.toLocaleTimeString();
 
-					fetch(this.apiGetAllComments)
+					fetch(`http://localhost:3000/comments/getAllComments/${post._id}`)
 						.then((res) => res.json())
 						.then((comments) => {
-							const arrayAllComments = comments.filter((el) => el.postId == post._id);
 							fetch(`http://localhost:3000/users/getOneUser/${post.userId}`)
 								.then((res) => res.json())
 								.then((user) => {
@@ -324,11 +322,12 @@ export default {
 										pseudo: user.userName,
 										post: post.post,
 										comments: [],
-										numberComments: arrayAllComments.length,
+										numberComments: comments.length,
 										dateJour: dateJour,
 										dateHeure: dateHeure,
 										userId: user._id,
 										storageUserId: storageUserId,
+										image: user.image
 									});
 								});
 						});
@@ -342,15 +341,16 @@ export default {
 		},
 		buttonComment(post) {
 			post.comments = [];
-			const userIdStorage = JSON.parse(sessionStorage.getItem("userId"));
-			fetch(this.apiGetAllComments)
+
+			fetch(`http://localhost:3000/comments/getAllComments/${post.idPost}`)
 				.then((res) => res.json())
 				.then((comments) => {
-					const arrayComments = comments.filter((el) => el.postId == post.idPost);
-					for (let comment of arrayComments) {
+					for (let comment of comments) {
 						const newDate = new Date(comment.datePost);
 						const dateJour = newDate.toLocaleDateString();
 						const dateHeure = newDate.toLocaleTimeString();
+						const userIdStorage = JSON.parse(sessionStorage.getItem("userId"));
+
 						fetch(`http://localhost:3000/users/getOneUser/${comment.userId}`)
 							.then((res) => res.json())
 							.then((userComment) => {
@@ -368,26 +368,53 @@ export default {
 				});
 		},
 		buttonEnvoisComment(post) {
-			const userId = JSON.parse(sessionStorage.getItem("userId"));
-			const comment = document.querySelector(".recupComment").value;
-			const objetComment = { comment, userId };
+			post.comments = [];
 
-			fetch(`http://localhost:3000/comments/createComment/${post.idPost}`, {
-				method: "POST",
-				headers: {
-					"Content-type": "application/json",
-				},
-				body: JSON.stringify(objetComment),
-			}).then((res) => res.json())
-			.then((comment) => {
-				console.log(comment)
-				fetch(`http://localhost:3000/comments/getAllComments`)
-				.then(res => res.json())
-				.then((comments) => {
-					const arrayComments = comments.filter(el => el.postId == post.idPost);
-					post.numberComments = arrayComments.length;
-				})
-			})
+			const userIdStorage = JSON.parse(sessionStorage.getItem("userId"));
+			const userId = JSON.parse(sessionStorage.getItem("userId"));
+			const comment = document.querySelectorAll(".recupComment");
+			for (let nodeListComment of comment) {
+				if (nodeListComment.value != "") {
+					const comment = nodeListComment.value;
+					const objetComment = { comment, userId };
+
+					fetch(`http://localhost:3000/comments/createComment/${post.idPost}`, {
+						method: "POST",
+						headers: {
+							"Content-type": "application/json",
+						},
+						body: JSON.stringify(objetComment),
+					})
+						.then((res) => res.json())
+						.then(() => {
+							fetch(`http://localhost:3000/comments/getAllComments/${post.idPost}`)
+								.then((res) => res.json())
+								.then((comments) => {
+									console.log(comments)
+									for (let comment of comments) {
+										const newDate = new Date(comment.datePost);
+										const dateJour = newDate.toLocaleDateString();
+										const dateHeure = newDate.toLocaleTimeString();
+
+										fetch(`http://localhost:3000/users/getOneUser/${comment.userId}`)
+											.then((res) => res.json())
+											.then((userComment) => {
+												post.comments.push({
+													userName: userComment.userName,
+													comment: comment.comment,
+													idComment: comment._id,
+													userIdComment: comment.userId,
+													storageUserIdComment: userIdStorage,
+													dateJour: dateJour,
+													dateHeure: dateHeure,
+												});
+												post.numberComments = comments.length;
+											});
+									}
+								});
+						});
+				}
+			}
 		},
 		buttonProfil() {
 			window.location.href = "/#/profil";
@@ -413,10 +440,13 @@ export default {
 				headers: {
 					"Content-type": "application/json",
 				},
-			}).then((res) => {
-				console.log(res);
-				console.log(post)
-			});
+			})
+				.then((res) => res.json())
+				.then((commentDelete) => {
+					const actualiseDeleteComment = post.comments.filter((el) => el.idComment != commentDelete._id);
+					post.comments = actualiseDeleteComment;
+					post.numberComments = actualiseDeleteComment.length;
+				});
 		},
 	},
 };

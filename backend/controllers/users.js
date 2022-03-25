@@ -65,17 +65,3 @@ exports.getOneUser = (req, res) => {
             res.status(200).json(user)
         })
 }
-
-exports.createImage = (req, res) => {
-    modelsUsers.findById(req.params.id)
-        .then((user) => {
-            if (user) {
-                user.updateOne({
-                    image: req.body.image
-                })
-                    .then(() => {
-                        res.status(201).json({ message: "Image créer" })
-                    })
-            }
-        })
-}

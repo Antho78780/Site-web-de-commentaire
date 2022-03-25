@@ -5,12 +5,12 @@
 				<div class="col-md-4">
 					<div class="profile-img">
 						<img
-							src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS52y5aInsxSm31CvHOFHWujqUx_wWTS9iM6s7BAm21oEN_RiGoog"
+							:src="user.image"
 							alt=""
 						/>
 						<div class="file btn btn-lg btn-primary">
 							Change Photo
-							<input type="file" name="file" />
+							<input @change="changePhoto" type="file" name="file" />
 						</div>
 					</div>
 				</div>
@@ -144,10 +144,12 @@
 	</div>
 </template>
 <script>
+import axios from "axios";
 export default {
 	data() {
 		return {
 			user: {},
+			selectedFile: null
 		};
 	},
 	mounted() {
@@ -156,9 +158,23 @@ export default {
 			.then((res) => res.json())
 			.then((user) => {
 				this.user = user;
-				console.log(this.user);
 			});
 	},
+	methods: {
+		changePhoto(e) {
+			this.selectedFile = e.target.files[0];
+			const userId = JSON.parse(sessionStorage.getItem("userId"));
+			const formData = new FormData();
+			
+			formData.append("image",this.selectedFile);
+			axios.put(`http://localhost:3000/users/image/${userId}`, formData)
+			.then(res => {
+				if(res.status == 201) {
+					location.reload();
+				}
+			})
+		},
+	}
 };
 </script>
 <style scoped>

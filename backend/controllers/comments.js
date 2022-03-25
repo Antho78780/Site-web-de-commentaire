@@ -1,4 +1,6 @@
 const modelComments = require("../models/comments");
+const modelPosts = require("../models/post");
+
 exports.createComment = (req, res) => {
     modelComments.create({
         userId: req.body.userId,
@@ -13,14 +15,19 @@ exports.createComment = (req, res) => {
 }
 
 exports.getAllComments = (req, res) => {
-    modelComments.find()
-        .then((comments) => {
-            res.status(200).json(comments);
-        })
+   modelPosts.findById(req.params.id)
+   .then((post) => {
+       modelComments.find({
+           postId: {$in: [post._id]}
+       })
+       .then((comments) => {
+            res.status(201).json(comments) 
+       })
+   })
 }
 exports.deleteComment = (req, res) => {
     modelComments.findByIdAndDelete(req.params.id)
-    .then(() => {
-        res.status(201).json({message: "Commentaire Supprimé"});
+    .then((deleteComment) => {
+        res.status(201).json(deleteComment);
     })
 }
