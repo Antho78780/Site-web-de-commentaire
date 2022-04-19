@@ -56,14 +56,14 @@ export default {
 
 					if (user.userId) {
 						sessionStorage.setItem("userId", JSON.stringify(user.userId));
-						window.location.href = "/#/accueil";
+						window.location.href = "/#/";
 					} else {
 						this.errorCompte = user.error;
 					}
 				});
 		},
 		pageEnregistrer() {
-			window.location.href = "/?#/register";
+			window.location.href = "/#/register";
 		},
 	},
 };

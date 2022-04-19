@@ -1,10 +1,16 @@
 <template>
 	<div id="button-global">
-		<button @click="buttonProfil" class="btn btn-primary btn-perso">
+		<button @click="buttonProfil" v-if="storageUserId" class="btn btn-primary btn-perso">
 			Mon compte
 		</button>
-		<button @click="deconnecter" class="btn btn-primary btn-perso">
+		<button @click="deconnecter" v-if="storageUserId" class="btn btn-primary btn-perso">
 			Déconnexion
+		</button>
+		<button @click="connecter" v-if="storageUserId == null" class="btn btn-primary btn-perso">
+			Se connecter
+		</button>
+		<button @click="enregistrer" v-if="storageUserId == null" class="btn btn-primary btn-perso">
+			s'enregistrer
 		</button>
 	</div>
 	<div class="container">
@@ -299,10 +305,13 @@ export default {
 			apiGetAllUsers: "http://localhost:3000/users/getAllUsers",
 			arrayAllUsers: [],
 			postsArray: [],
+			storageUserId: ""
+
 		};
 	},
 	mounted() {
-		const storageUserId = JSON.parse(sessionStorage.getItem("userId"));
+		this.storageUserId = JSON.parse(sessionStorage.getItem("userId"));
+		console.log(this.storageUserId);
 		fetch(this.apiGetAllPosts)
 			.then((res) => res.json())
 			.then((posts) => {
@@ -326,7 +335,7 @@ export default {
 										dateJour: dateJour,
 										dateHeure: dateHeure,
 										userId: user._id,
-										storageUserId: storageUserId,
+										storageUserId: this.storageUserId,
 										image: user.image
 									});
 								});
@@ -337,7 +346,13 @@ export default {
 	methods: {
 		deconnecter() {
 			sessionStorage.removeItem("userId");
-			window.location.href = "/#/";
+			window.location.href= "/#/login";
+		},
+		connecter() {
+			window.location.href= "/#/login"
+		},
+		enregistrer() {
+			window.location.href= "/#/register"
 		},
 		buttonComment(post) {
 			post.comments = [];
