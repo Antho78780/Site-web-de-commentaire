@@ -52,8 +52,6 @@ export default {
 			})
 				.then((res) => res.json())
 				.then((user) => {
-					console.log(user);
-
 					if (user.userId) {
 						sessionStorage.setItem("userId", JSON.stringify(user.userId));
 						window.location.href = "/#/";

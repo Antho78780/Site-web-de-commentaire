@@ -218,6 +218,7 @@
 										>
 											Envoyer
 										</button>
+										<p class="text-danger">{{msgError}}</p>
 									</div>
 								</div>
 							</div>
@@ -305,13 +306,13 @@ export default {
 			apiGetAllUsers: "http://localhost:3000/users/getAllUsers",
 			arrayAllUsers: [],
 			postsArray: [],
-			storageUserId: ""
+			storageUserId: "",
+			msgError: ""
 
 		};
 	},
 	mounted() {
 		this.storageUserId = JSON.parse(sessionStorage.getItem("userId"));
-		console.log(this.storageUserId);
 		fetch(this.apiGetAllPosts)
 			.then((res) => res.json())
 			.then((posts) => {
@@ -388,46 +389,48 @@ export default {
 			const userIdStorage = JSON.parse(sessionStorage.getItem("userId"));
 			const userId = JSON.parse(sessionStorage.getItem("userId"));
 			const comment = document.querySelectorAll(".recupComment");
+
 			for (let nodeListComment of comment) {
 				if (nodeListComment.value != "") {
 					const comment = nodeListComment.value;
 					const objetComment = { comment, userId };
-
-					fetch(`http://localhost:3000/comments/createComment/${post.idPost}`, {
-						method: "POST",
-						headers: {
-							"Content-type": "application/json",
-						},
-						body: JSON.stringify(objetComment),
-					})
+					if(objetComment.userId != null) {
+						fetch(`http://localhost:3000/comments/createComment/${post.idPost}`, {
+							method: "POST",
+							headers: {
+								"Content-type": "application/json",
+							},
+							body: JSON.stringify(objetComment),
+						})
 						.then((res) => res.json())
-						.then(() => {
-							fetch(`http://localhost:3000/comments/getAllComments/${post.idPost}`)
-								.then((res) => res.json())
-								.then((comments) => {
-									console.log(comments)
-									for (let comment of comments) {
-										const newDate = new Date(comment.datePost);
-										const dateJour = newDate.toLocaleDateString();
-										const dateHeure = newDate.toLocaleTimeString();
+					}
+					else {
+						this.msgError = "Connecter vous pour envoyé un commentaire"
+					}
+					fetch(`http://localhost:3000/comments/getAllComments/${post.idPost}`)
+					.then((res) => res.json())
+					.then((comments) => {
+						for (let comment of comments) {
+							const newDate = new Date(comment.datePost);
+							const dateJour = newDate.toLocaleDateString();
+							const dateHeure = newDate.toLocaleTimeString();
 
-										fetch(`http://localhost:3000/users/getOneUser/${comment.userId}`)
-											.then((res) => res.json())
-											.then((userComment) => {
-												post.comments.push({
-													userName: userComment.userName,
-													comment: comment.comment,
-													idComment: comment._id,
-													userIdComment: comment.userId,
-													storageUserIdComment: userIdStorage,
-													dateJour: dateJour,
-													dateHeure: dateHeure,
-												});
-												post.numberComments = comments.length;
-											});
-									}
+							fetch(`http://localhost:3000/users/getOneUser/${comment.userId}`)
+							.then((res) => res.json())
+							.then((userComment) => {
+								post.comments.push({
+									userName: userComment.userName,
+									comment: comment.comment,
+									idComment: comment._id,
+									userIdComment: comment.userId,
+									storageUserIdComment: userIdStorage,
+									dateJour: dateJour,
+									dateHeure: dateHeure,
 								});
-						});
+								post.numberComments = comments.length;
+							});
+						}
+					});
 				}
 			}
 		},
